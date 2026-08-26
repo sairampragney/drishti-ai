@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+:root { --ink: #102a43; --muted: #627d98; --line: #d9e2ec; --paper: #f6f9fc; --teal: #0f766e; --blue: #1769aa; --coral: #d95d39; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Aptos", "Segoe UI", sans-serif; }
+a { color: inherit; text-decoration: none; }
+button, input, select { font: inherit; }
+.shell-bg { min-height: 100vh; background: radial-gradient(circle at 80% 0%, #d9f3f0 0, transparent 34%), linear-gradient(145deg, #f7fbff 0%, #edf5f5 100%); }
+.glass { border: 1px solid rgba(255,255,255,.85); background: rgba(255,255,255,.72); box-shadow: 0 18px 50px rgba(16,42,67,.08); backdrop-filter: blur(18px); }
+.eyebrow { color: var(--teal); font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.button-primary { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: 0; border-radius: .75rem; background: var(--ink); color: white; padding: .75rem 1rem; font-weight: 700; transition: transform .2s, background .2s; }
+.button-primary:hover { background: #1b4965; transform: translateY(-1px); }
+.button-secondary { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border: 1px solid var(--line); border-radius: .75rem; background: white; color: var(--ink); padding: .7rem 1rem; font-weight: 700; }
+.input { width: 100%; border: 1px solid var(--line); border-radius: .7rem; background: rgba(255,255,255,.8); padding: .75rem .85rem; outline: none; }
+.input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(15,118,110,.12); }

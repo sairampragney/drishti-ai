@@ -1,0 +1,1 @@
+export function Disclaimer() { return <div className="rounded-xl border border-[#f3d19c] bg-[#fff9ed] px-4 py-3 text-sm leading-5 text-[#7a4b12]"><strong>Prototype dataset information, not a clinical diagnosis.</strong> Computer vision detects an eye image only. Dataset classifications must not be interpreted as a diagnosis for a real patient.</div>; }
