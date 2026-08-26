@@ -3,15 +3,32 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Camera, CheckCircle2, CircleAlert, ScanLine } from "lucide-react";
-import { FaceLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
+import { FaceLandmarker, FilesetResolver, type NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { AppShell } from "@/components/app-shell";
 import { Disclaimer } from "@/components/disclaimer";
 import { demoImages } from "@/lib/demo-data";
 
 type ScanState = "idle" | "requesting" | "processing" | "detected" | "demo" | "denied" | "unavailable" | "model-error";
 
+const leftEyeLandmarks = [33, 133, 160, 159, 158, 157, 173, 144, 145, 153, 154, 155];
+const rightEyeLandmarks = [362, 263, 387, 386, 385, 384, 398, 373, 374, 380, 381, 382];
+
+function drawEyeBox(context: CanvasRenderingContext2D, landmarks: NormalizedLandmark[], indexes: number[], width: number, height: number) {
+  const points = indexes.map((index) => landmarks[index]).filter((point): point is NormalizedLandmark => Boolean(point));
+  if (!points.length) return;
+  const padding = 14;
+  const xValues = points.map((point) => point.x * width);
+  const yValues = points.map((point) => point.y * height);
+  const left = Math.max(0, Math.min(...xValues) - padding);
+  const top = Math.max(0, Math.min(...yValues) - padding);
+  const boxWidth = Math.min(width - left, Math.max(...xValues) - Math.min(...xValues) + padding * 2);
+  const boxHeight = Math.min(height - top, Math.max(...yValues) - Math.min(...yValues) + padding * 2);
+  context.strokeRect(left, top, boxWidth, boxHeight);
+}
+
 export default function Scan() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const overlayRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const landmarkerRef = useRef<FaceLandmarker | null>(null);
   const frameRef = useRef<number | null>(null);
@@ -56,11 +73,24 @@ export default function Scan() {
 
   function detectFrame() {
     const video = videoRef.current;
+    const canvas = overlayRef.current;
     const landmarker = landmarkerRef.current;
-    if (!video || !landmarker) return;
+    if (!video || !canvas || !landmarker) return;
     if (video.readyState >= 2) {
+      const width = video.videoWidth || video.clientWidth;
+      const height = video.videoHeight || video.clientHeight;
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d");
       const result = landmarker.detectForVideo(video, performance.now());
-      if (result.faceLandmarks.length > 0) {
+      context?.clearRect(0, 0, width, height);
+      if (context && result.faceLandmarks.length > 0) {
+        context.strokeStyle = "#8fe3d2";
+        context.lineWidth = 4;
+        context.shadowColor = "rgba(16, 42, 67, .8)";
+        context.shadowBlur = 8;
+        drawEyeBox(context, result.faceLandmarks[0], leftEyeLandmarks, width, height);
+        drawEyeBox(context, result.faceLandmarks[0], rightEyeLandmarks, width, height);
         setState("detected");
         landmarker.close();
         landmarkerRef.current = null;
@@ -70,12 +100,9 @@ export default function Scan() {
     frameRef.current = requestAnimationFrame(detectFrame);
   }
 
-  function useDemoDetection() {
-    setState("demo");
-  }
-
-  const status = state === "detected" ? "Eye image detected" : state === "demo" ? "Demo detection confirmed" : state === "processing" ? "Processing image" : state === "requesting" ? "Activating camera" : state === "denied" ? "Camera permission denied" : state === "model-error" ? "Camera ready; CV model unavailable" : state === "unavailable" ? "Camera unavailable" : "Ready to begin";
+  function useDemoDetection() { setState("demo"); }
+  const status = state === "detected" ? "Eyes detected" : state === "demo" ? "Demo detection confirmed" : state === "processing" ? "Processing eye landmarks" : state === "requesting" ? "Activating camera" : state === "denied" ? "Camera permission denied" : state === "model-error" ? "Camera ready; CV model unavailable" : state === "unavailable" ? "Camera unavailable" : "Ready to begin";
   const canShowResult = state === "detected" || state === "demo";
 
-  return <AppShell><p className="eyebrow">New screening</p><h1 className="mt-2 text-4xl font-black">Detect an eye image</h1><p className="mt-2 max-w-2xl text-[#627d98]">Select a synthetic patient, activate the camera, and wait for the image-detection state.</p><div className="mt-6"><Disclaimer /></div><div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_.8fr]"><section className="glass rounded-2xl p-4"><div className="relative grid min-h-[360px] place-items-center overflow-hidden rounded-xl bg-[#102a43]"><video ref={videoRef} autoPlay muted playsInline className={`absolute inset-0 size-full object-cover ${state === "idle" ? "hidden" : ""}`} /><div className="absolute inset-8 rounded-xl border border-dashed border-[#8fe3d2]/70" />{state === "idle" && <div className="z-10 text-center text-blue-100"><Camera className="mx-auto mb-4" size={42} /><p className="font-bold">Camera is on standby</p></div>}{canShowResult && <div className="z-10 rounded-full bg-[#e7f6f2] p-3 text-[#0f766e]"><CheckCircle2 size={28} /></div>}</div><div className="flex flex-wrap items-center justify-between gap-3 p-4"><div className="flex items-center gap-2 text-sm font-bold"><span className={`size-2.5 rounded-full ${canShowResult ? "bg-[#2a9d8f]" : "bg-[#f0a202]"}`} />{status}</div><button className="button-primary" onClick={start} disabled={state === "requesting" || state === "processing"}>{state === "detected" ? "Detection complete" : "Activate camera"}</button></div>{(state === "denied" || state === "unavailable" || state === "model-error") && <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4 text-sm text-[#b54736]"><p className="flex items-center gap-2"><CircleAlert size={16} />{state === "denied" ? "Allow camera access in the browser, then retry." : state === "model-error" ? "The camera is active, but the CV model could not load." : "This browser does not provide camera access."}</p>{state === "model-error" && <button className="button-secondary !border-[#e9b3a9] !text-[#b54736]" onClick={useDemoDetection}>Use demo detection</button>}</div>}</section><aside className="glass rounded-2xl p-6"><p className="eyebrow">Selected patient</p><h2 className="mt-2 text-2xl font-black">Aarav Mehta</h2><p className="mt-1 text-sm text-[#627d98]">DR-2401 · 52 years</p><div className="my-7 border-t border-[#e5edf3]" /><p className="eyebrow">Next step</p><p className="mt-2 text-sm leading-6 text-[#486581]">After eye image detection, the prototype selects a mBRSET image for dataset review.</p><Link href={canShowResult ? `/results/demo-${demoImages[1].id}` : "#"} className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold ${canShowResult ? "bg-[#0f766e] text-white" : "pointer-events-none bg-[#e5edf3] text-[#829ab1]"}`}><ScanLine size={17} />Show prototype result</Link></aside></div></AppShell>;
+  return <AppShell><p className="eyebrow">New screening</p><h1 className="mt-2 text-4xl font-black">Detect an eye image</h1><p className="mt-2 max-w-2xl text-[#627d98]">Select a synthetic patient, activate the camera, and wait for the image-detection state.</p><div className="mt-6"><Disclaimer /></div><div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_.8fr]"><section className="glass rounded-2xl p-4"><div className="relative grid min-h-[360px] place-items-center overflow-hidden rounded-xl bg-[#102a43]"><video ref={videoRef} autoPlay muted playsInline className={`absolute inset-0 size-full object-cover ${state === "idle" ? "hidden" : ""}`} /><canvas ref={overlayRef} aria-hidden="true" className="pointer-events-none absolute inset-0 size-full object-cover" /><div className="absolute inset-8 rounded-xl border border-dashed border-[#8fe3d2]/70" />{state === "idle" && <div className="z-10 text-center text-blue-100"><Camera className="mx-auto mb-4" size={42} /><p className="font-bold">Camera is on standby</p></div>}{canShowResult && <div className="z-10 rounded-full bg-[#e7f6f2] p-3 text-[#0f766e]"><CheckCircle2 size={28} /></div>}</div><div className="flex flex-wrap items-center justify-between gap-3 p-4"><div className="flex items-center gap-2 text-sm font-bold"><span className={`size-2.5 rounded-full ${canShowResult ? "bg-[#2a9d8f]" : "bg-[#f0a202]"}`} />{status}</div><button className="button-primary" onClick={start} disabled={state === "requesting" || state === "processing"}>{state === "detected" ? "Detection complete" : "Activate camera"}</button></div>{(state === "denied" || state === "unavailable" || state === "model-error") && <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4 text-sm text-[#b54736]"><p className="flex items-center gap-2"><CircleAlert size={16} />{state === "denied" ? "Allow camera access in the browser, then retry." : state === "model-error" ? "The camera is active, but the CV model could not load." : "This browser does not provide camera access."}</p>{state === "model-error" && <button className="button-secondary !border-[#e9b3a9] !text-[#b54736]" onClick={useDemoDetection}>Use demo detection</button>}</div>}</section><aside className="glass rounded-2xl p-6"><p className="eyebrow">Selected patient</p><h2 className="mt-2 text-2xl font-black">Aarav Mehta</h2><p className="mt-1 text-sm text-[#627d98]">DR-2401 · 52 years</p><div className="my-7 border-t border-[#e5edf3]" /><p className="eyebrow">Next step</p><p className="mt-2 text-sm leading-6 text-[#486581]">After eye image detection, the prototype selects a mBRSET image for dataset review.</p><Link href={canShowResult ? `/results/demo-${demoImages[1].id}` : "#"} className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold ${canShowResult ? "bg-[#0f766e] text-white" : "pointer-events-none bg-[#e5edf3] text-[#829ab1]"}`}><ScanLine size={17} />Show prototype result</Link></aside></div></AppShell>;
 }
