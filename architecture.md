@@ -3,7 +3,7 @@
 
 ## 1. Architecture Overview
 
-DrishtiAI is a doctor-facing academic prototype. It uses a Next.js application with browser-based eye-image processing, Supabase authentication, and PostgreSQL data storage.
+DrishtiAI is a doctor-facing academic prototype. The first demo uses a Next.js application with browser-based eye-image processing and browser-local demo storage. Supabase and PostgreSQL are reserved for a later integration.
 
 The architecture keeps these concerns separate:
 
@@ -15,9 +15,8 @@ Browser
     +-- Prototype result presentation
              |
              +-- Next.js server logic
-             +-- Supabase Auth
-             +-- Supabase PostgreSQL
-             +-- Approved dataset image storage
+             +-- Browser localStorage/sessionStorage
+             +-- Approved static dataset image storage
 ```
 
 The computer-vision component detects or processes an eye image. It does not diagnose diabetic retinopathy, provide clinical accuracy, predict severity, or provide medical decision support.
@@ -38,9 +37,8 @@ Any displayed result must be identified as:
 ### Backend and data
 
 - Next.js server functionality where appropriate
-- Supabase Auth
-- PostgreSQL through Supabase
-- Supabase Row Level Security
+- Browser localStorage/sessionStorage for demo authentication and records
+- Supabase/PostgreSQL reserved for a future integration
 
 ### Computer vision
 
@@ -77,7 +75,7 @@ Selects and displays a prototype dataset result using only validated metadata. U
 
 ### Authentication
 
-Uses Supabase Auth and server-validated sessions for doctor accounts.
+Uses local browser storage for demo doctor accounts and sessions. This is not production authentication. The data-access boundary remains replaceable so Supabase can be added later.
 
 ### Audit and history
 
@@ -264,7 +262,7 @@ created_at
 
 ### Unresolved schema items
 
-The implementation uses four tables: `profiles`, `patients`, `dataset_images`, and `screenings`. `dataset_sources` is not a separate table because the source is a constrained field on `dataset_images`; static source facts remain in the versioned application manifest. PostgreSQL stores image metadata required by application queries. There is no foreign key between APTOS metadata and mBRSET images.
+The first demo does not create or use database tables. It uses browser storage for demo accounts, synthetic patient records, selected images, and saved screenings. A future integration may use `profiles`, `patients`, `dataset_images`, and `screenings`; there is no foreign key between APTOS metadata and mBRSET images.
 
 The following deployment details remain `UNVERIFIED / REQUIRES CONFIRMATION`:
 
@@ -274,9 +272,9 @@ The following deployment details remain `UNVERIFIED / REQUIRES CONFIRMATION`:
 
 ## 9. Authentication and Authorization
 
-Supabase Auth will manage doctor signup, login, session handling, and logout. Server-side route and data access checks are required; client authentication state alone is not trusted.
+Local demo authentication manages doctor signup, login, session handling, and logout in browser storage. This is not production authentication. Supabase Auth is reserved for a future integration.
 
-Row Level Security ensures that a doctor can access only their own profile, patients, and screenings. Dataset image metadata is readable by authenticated users and contains no patient data. The migration in `supabase/migrations/0001_initial.sql` defines the initial policies and they must be integration-tested against the configured Supabase project.
+The first demo has no database or Row Level Security layer. Browser storage is local to the current browser profile. Supabase RLS remains a future integration requirement.
 
 ## 10. Required Routes
 
@@ -300,9 +298,9 @@ Protected:
 /settings
 ```
 
-## 11. Supabase Configuration Requirements
+## 11. Future Supabase Configuration
 
-The following are deployment configuration values supplied through environment variables or the Supabase dashboard:
+The following are not required for the first demo and will be supplied only for a future integration:
 
 - Supabase project URL: deployment value required later
 - Supabase anon/public key: deployment value required later
@@ -310,7 +308,7 @@ The following are deployment configuration values supplied through environment v
 - email-confirmation policy: deployment setting required later
 - Storage bucket configuration: deployment setting required later
 
-Secrets must be provided through environment configuration and never hard-coded or committed. The application runs in demo mode when these values are absent.
+Secrets must be provided through environment configuration and never hard-coded or committed.
 
 ## 12. Security and Medical Safety
 
@@ -333,12 +331,12 @@ The target flow is:
 Local development -> Git -> GitHub -> Vercel -> Production
 ```
 
-Before deployment, verify the build, authentication, RLS, camera behavior, computer vision behavior, dataset provenance, result disclaimer, responsive UI, and absence of secrets. Production environment values and Vercel configuration are deployment values required later.
+Before a future deployment, verify the build, local demo authentication, camera behavior, computer vision behavior, dataset provenance, result disclaimer, responsive UI, and absence of secrets. Supabase production values and Vercel configuration are not part of this first demo.
 
 ## 14. Implementation Assumptions
 
 1. The app uses verified APTOS and mBRSET metadata without joining the datasets.
-2. Local demo mode uses the checked-in demo manifest and an environment-configured image root; production image storage is supplied through configuration.
-3. Supabase configuration and email-confirmation behavior are deployment concerns.
-4. The initial SQL migration is the working schema and remains subject to integration testing.
+2. Local demo mode uses the checked-in mBRSET manifest and static image assets.
+3. Supabase configuration, email-confirmation behavior, database schema, and RLS are future integration concerns.
+4. mBRSET classes remain neutral because their medical meanings are not verified in the supplied project sources.
 created_at

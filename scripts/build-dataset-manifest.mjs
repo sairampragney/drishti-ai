@@ -11,6 +11,6 @@ for (const folder of ["0", "1", "2", "3", "4"]) {
   }
 }
 entries.sort((left, right) => left.imagePath.localeCompare(right.imagePath, undefined, { numeric: true }));
-await fs.mkdir("data/generated", { recursive: true });
-await fs.writeFile("data/generated/mbrset-manifest.json", JSON.stringify({ source: "mBRSET Data", generatedAt: new Date().toISOString(), entries }, null, 2));
+await fs.mkdir("public/dataset", { recursive: true });
+await fs.writeFile("public/dataset/mbrset-manifest.json", JSON.stringify({ source: "mBRSET Data", entries }, null, 2));
 console.log(`Wrote ${entries.length} image records.`);

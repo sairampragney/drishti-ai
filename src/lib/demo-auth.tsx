@@ -1,0 +1,18 @@
+"use client";
+
+import { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+export interface DemoUser { email: string; displayName: string; }
+interface StoredAccount extends DemoUser { passwordHash?: string; }
+interface DemoAuthValue { user: DemoUser | null; ready: boolean; login: (email: string, password: string) => Promise<string | null>; signup: (name: string, email: string, password: string, confirmPassword: string) => Promise<string | null>; logout: () => void; }
+const SESSION_KEY = "drishti-demo-session";
+const ACCOUNTS_KEY = "drishti-demo-accounts";
+const defaultAccounts: Record<string, { user: DemoUser; password: string }> = { "sathwik@gmail.com": { user: { email: "sathwik@gmail.com", displayName: "Dr. Sathwik" }, password: "Sathwik@123" }, "madhurima@gmail.com": { user: { email: "madhurima@gmail.com", displayName: "Dr. Madhurima" }, password: "Madhurima@123" }, "sairampragney@gmail.com": { user: { email: "sairampragney@gmail.com", displayName: "Dr. Sairam Pragney" }, password: "Sairam@123" } };
+const AuthContext = createContext<DemoAuthValue | null>(null);
+
+function readAccounts(): Record<string, StoredAccount> { if (typeof window === "undefined") return {}; const saved = window.localStorage.getItem(ACCOUNTS_KEY); return saved ? JSON.parse(saved) as Record<string, StoredAccount> : {}; }
+async function hashPassword(password: string) { const bytes = new TextEncoder().encode(password); const hash = await crypto.subtle.digest("SHA-256", bytes); return Array.from(new Uint8Array(hash)).map((byte) => byte.toString(16).padStart(2, "0")).join(""); }
+export function DemoAuthProvider({ children }: { children: React.ReactNode }) { const [user, setUser] = useState<DemoUser | null>(null); const [ready, setReady] = useState(false); useEffect(() => { const saved = window.localStorage.getItem(SESSION_KEY); setUser(saved ? JSON.parse(saved) as DemoUser : null); setReady(true); }, []); function persist(next: DemoUser) { window.localStorage.setItem(SESSION_KEY, JSON.stringify(next)); setUser(next); } async function login(email: string, password: string) { const normalized = email.trim().toLowerCase(); const builtIn = defaultAccounts[normalized]; const stored = readAccounts()[normalized]; const valid = builtIn ? builtIn.password === password : stored?.passwordHash === await hashPassword(password); if (!valid) return "Email or password is incorrect."; persist(builtIn?.user ?? { email: stored.email, displayName: stored.displayName }); return null; } async function signup(name: string, email: string, password: string, confirmPassword: string) { const normalized = email.trim().toLowerCase(); if (!name.trim() || !normalized || password.length < 6) return "Enter a name, valid email, and password with at least 6 characters."; if (password !== confirmPassword) return "Passwords do not match."; const accounts = readAccounts(); const next: StoredAccount = { email: normalized, displayName: name.trim(), passwordHash: await hashPassword(password) }; accounts[normalized] = next; window.localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts)); persist(next); return null; } function logout() { window.localStorage.removeItem(SESSION_KEY); setUser(null); } return <AuthContext.Provider value={{ user, ready, login, signup, logout }}>{children}</AuthContext.Provider>; }
+export function useDemoAuth() { const value = useContext(AuthContext); if (!value) throw new Error("useDemoAuth must be used within DemoAuthProvider"); return value; }
+export function useRequireDemoAuth() { const auth = useDemoAuth(); const router = useRouter(); useEffect(() => { if (auth.ready && !auth.user) router.replace("/login"); }, [auth.ready, auth.user, router]); return auth; }

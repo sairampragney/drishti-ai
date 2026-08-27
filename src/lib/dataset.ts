@@ -1,9 +1,8 @@
-import { demoImages } from "@/lib/demo-data";
 import type { DatasetImage } from "@/types/domain";
 
 export function selectPrototypeImage(seed?: number): DatasetImage {
-  const index = seed === undefined ? Math.floor(Math.random() * demoImages.length) : Math.abs(seed) % demoImages.length;
-  return demoImages[index];
+  const index = seed === undefined ? 0 : Math.abs(seed) % 5;
+  return { id: `mbrset-demo-${index}`, source: "mbrset", originalFilename: "", imagePath: `${index}/`, sourceLabel: String(index), prototypeCategory: String(index), severity: `mBRSET Class ${index}` };
 }
 
 export const datasetSources = {

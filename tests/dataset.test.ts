@@ -9,8 +9,8 @@ describe("prototype dataset selection", () => {
   it("supports deterministic selection for reproducible tests", () => {
     expect(selectPrototypeImage(1).id).toBe(selectPrototypeImage(1).id);
   });
-  it("returns a verified mBRSET dataset classification", () => {
+  it("uses neutral mBRSET classes until medical meanings are verified", () => {
     expect(selectPrototypeImage(4).source).toBe("mbrset");
-    expect(selectPrototypeImage(4).severity).toContain("Proliferative");
+    expect(selectPrototypeImage(4).severity).toBe("mBRSET Class 4");
   });
 });

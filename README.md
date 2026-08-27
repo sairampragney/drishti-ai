@@ -76,10 +76,6 @@ Results are based on prototype dataset information and are intended for demonstr
 
 \- Browser Computer Vision
 
-\- Supabase
-
-\- PostgreSQL
-
 \- Vercel
 
 \- Git
