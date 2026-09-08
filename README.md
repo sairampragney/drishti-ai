@@ -4,15 +4,11 @@
 
 ## Explainable Computer-Vision Prototype for Diabetic Retinopathy Screening in Rural India
 
-A doctor-facing academic prototype demonstrating an AI-assisted workflow for retinal screening, computer-vision-based eye detection, and explainable presentation of prototype screening results.
+A doctor-facing academic prototype demonstrating a computer-vision-assisted workflow for retinal screening, eye detection, and presentation of prototype screening results.
 
 <br>
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-DrishtiAI-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://drishti-ai-tntt.vercel.app/dashboard)
-[![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=next.js&logoColor=white)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-[![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=black)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+[🚀 **View Live Demo**](https://drishti-ai-tntt.vercel.app/dashboard)
 
 </div>
 
@@ -24,9 +20,9 @@ A doctor-facing academic prototype demonstrating an AI-assisted workflow for ret
 
 The system does not provide medically validated diagnoses, treatment recommendations, or clinical decisions.
 
-Screening results demonstrated by the prototype are based on the provided prototype dataset and are intended **only for demonstration, academic evaluation, and project presentation purposes**.
+The screening results demonstrated by this prototype are based on the provided prototype retinal-image dataset and are intended **only for demonstration, academic evaluation, and project presentation purposes**.
 
-The system should not be used as a substitute for examination or diagnosis by a qualified medical professional.
+This system should not be used as a substitute for examination or diagnosis by a qualified medical professional.
 
 ---
 
@@ -34,9 +30,11 @@ The system should not be used as a substitute for examination or diagnosis by a 
 
 **DrishtiAI** is an academic computer-vision prototype designed to demonstrate a simplified workflow for diabetic retinopathy screening in resource-constrained and rural healthcare environments.
 
-The project focuses on creating a simple doctor-facing interface where retinal images can be processed through a browser-based computer-vision workflow and associated prototype screening results can be presented in an understandable format.
+The project provides a doctor-facing interface where retinal images can be processed through a browser-based computer-vision workflow and prototype screening results can be presented in an understandable format.
 
-The objective is to demonstrate how computer vision and explainable result presentation could support an initial screening workflow while keeping the limitations of a prototype system clearly visible.
+The primary objective is to explore how **Computer Vision, Explainable AI concepts, and modern web technologies** can be combined to demonstrate an accessible screening workflow.
+
+The project focuses on demonstrating the technology and user experience rather than providing a clinically validated medical solution.
 
 ---
 
@@ -47,8 +45,9 @@ The objective is to demonstrate how computer vision and explainable result prese
 - Present prototype screening results in a clear and understandable format.
 - Maintain patient and screening information within the application workflow.
 - Provide screening history for previously processed cases.
-- Explore how explainable interfaces can make AI-assisted screening results easier to understand.
+- Explore explainable interfaces for AI-assisted screening workflows.
 - Demonstrate a responsive healthcare-oriented user interface.
+- Explore how computer vision could support preliminary screening workflows in resource-constrained environments.
 
 ---
 
@@ -76,13 +75,13 @@ Uses the provided prototype retinal-image dataset to demonstrate screening-resul
 
 ### 📊 Screening Result Visualization
 
-Displays prototype screening information in a structured interface designed for easy interpretation.
+Displays prototype screening information in a structured interface designed for easier interpretation.
 
 ### 📋 Screening History
 
 Provides access to previously recorded screening information within the application workflow.
 
-### 📱 Responsive Medical UI
+### 📱 Responsive Healthcare UI
 
 Uses a modern glassmorphism-inspired healthcare interface designed to work across different screen sizes.
 
